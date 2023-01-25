@@ -6,8 +6,21 @@ app.get('/', function(req, res){
 })
 
 app.get("/game/:gameID", function(req, res){
+
+    //to be able to get the game info re: powerplays
+    
+    //request and URL Generation
     const axios = require('axios').default;
-    res.send("Game " + req.params['gameID']);
+    const nhlGameID = req.params['gameID'];
+    const gameRequestURL = "https://statsapi.web.nhl.com/api/v1/game/"+ nhlGameID + "/feed/live"
+
+    //request execution
+        const nhlParse = require("./nhl_parse.js");
+        axios.get(gameRequestURL)
+            .then(function(response){
+                const powerplayInfo = nhlParse.getPowerPlayInfoFromGameLieData(response.data);
+                res.send(powerplayInfo);
+            })
 })
 
 var server = app.listen(8081, function(){
