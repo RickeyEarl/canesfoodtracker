@@ -18,7 +18,7 @@ app.get("/game/:gameID", function(req, res){
         const nhlParse = require("./nhl_parse.js");
         axios.get(gameRequestURL)
             .then(function(response){
-                const powerplayInfo = nhlParse.getPowerPlayInfoFromGameLieData(response.data);
+                const powerplayInfo = nhlParse.getPowerPlayInfoFromGameLiveData(response.data);
                 res.send(powerplayInfo);
             })
 })
