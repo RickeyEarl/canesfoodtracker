@@ -1,5 +1,10 @@
 const favoriteTeam = 12; //12 is the Carolina Hurricane's assigned number
 
+function transformScheduleInfoFromAPI(teamID){
+
+
+}
+
 function getPowerPlayInfoFromGameLiveData(data){
     
     //get play data
@@ -58,4 +63,4 @@ function getPowerPlayInfoFromGameLiveData(data){
     
 }
 
-module.exports = {getPowerPlayInfoFromGameLiveData}
+module.exports = { getPowerPlayInfoFromGameLiveData, transformScheduleInfoFromAPI }
