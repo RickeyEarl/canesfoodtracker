@@ -23,20 +23,41 @@ app.get("/game/:gameID", function(req, res){
             })
 })
 
-app.get("team/:teamID/schedule", function(req,res){
+app.get("/team/:teamID/schedule", function(req,res){
     const seasonStart = "2022-10-07";
     const seasonEnd = "2023-05-01";
     const axios = require('axios').default;
     const nhlTeamID = req.params['teamID'];
-    const scheduleRequestURL = "https://statsapi.web.nhl.com/api/v1/schedule?teamId=" + teamID + "&startDate=" + seasonStart +"&endDate=" + seasonEnd;
+    const scheduleRequestURL = "https://statsapi.web.nhl.com/api/v1/schedule?teamId=" + nhlTeamID + "&startDate=" + seasonStart +"&endDate=" + seasonEnd;
+    const nhlParse = require("./nhl_parse.js");
 
     axios.get(scheduleRequestURL)
         .then(function(response){
             const scheduleInfo = nhlParse.transformScheduleInfoFromAPI(response.data);
+            res.send(scheduleInfo);
         })
 })
 
-var server = app.listen(8081, function(){
+app.get('/team/:teamID/schedule/powerplay', function(req,res){
+    const scheduleURL = "http://localhost:8083/team/" + req.params['teamID'] + "/schedule";
+    const axios = require('axios').default;
+    const nhlParse = require("./nhl_parse");
+    sendArray = [];
+    axios.get(scheduleURL)
+        .then(function(response){
+            for(game of response.data){
+                let gameInfoURL = "http://localhost:8083/game/" + game['gameID'];
+                console.log(gameInfoURL);
+                axios.get(gameInfoURL)
+                    .then(function(gameResponse){
+                        sendArray.push(gameResponse.data);
+                    })
+            }
+        })
+    res.send(sendArray);
+})
+
+var server = app.listen(8083, function(){
     var host = server.address().address
     var port = server.address().port
 
