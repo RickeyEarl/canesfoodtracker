@@ -18,7 +18,7 @@ app.get("/game/:gameID", function(req, res){
         const nhlParse = require("./nhl_parse.js");
         axios.get(gameRequestURL)
             .then(function(response){
-                const powerplayInfo = nhlParse.getPowerPlayInfoFromGameLiveData(response.data);
+                const powerplayInfo = nhlParse.getPPGInfoFromGameLiveData(response.data);
                 res.send(powerplayInfo);
             })
 })
@@ -38,6 +38,8 @@ app.get("/team/:teamID/schedule", function(req,res){
         })
 })
 
+
+
 app.get('/team/:teamID/schedule/powerplay', function(req,res){
     const scheduleURL = "http://localhost:8083/team/" + req.params['teamID'] + "/schedule";
     const axios = require('axios').default;
@@ -45,16 +47,23 @@ app.get('/team/:teamID/schedule/powerplay', function(req,res){
     sendArray = [];
     axios.get(scheduleURL)
         .then(function(response){
-            for(game of response.data){
-                let gameInfoURL = "http://localhost:8083/game/" + game['gameID'];
-                console.log(gameInfoURL);
-                axios.get(gameInfoURL)
-                    .then(function(gameResponse){
-                        sendArray.push(gameResponse.data);
-                    })
-            }
+            return scheduleData = response.data;
         })
-    res.send(sendArray);
+        .then(function(schedule){
+            let promiseArray = []
+            for (game of schedule) {
+                let gameInfoURL = "http://localhost:8083/game/" + game['gameID'];
+                promiseArray.push(axios.get(gameInfoURL))
+               
+            }
+            Promise.all(promiseArray).then((values) =>{
+                let sendArray = []
+                for(value of values){
+                    sendArray.push(value['data']);
+                }
+                res.send(sendArray);
+            })
+        })
 })
 
 var server = app.listen(8083, function(){
