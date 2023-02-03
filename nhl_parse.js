@@ -122,14 +122,15 @@ function getPowerPlayInfoFromGameLiveData(data){
 }
 
 function getPenaltiesFromAllPlays(allPlays){
-    while (i < playData.length) {
+    let transformedPlayData = [];
+    for (play of allPlays) {
         //'play' is a value of an event that's on playData, so we have to
         //find the exact value of each penalty in the playData array
         let savePlay = true;
-        if (playData[i]['result']['eventTypeId'] != "PENALTY") { //why are some games giving me stoppages? game 2022020006 for ex
+        if (play['result']['eventTypeId'] != "PENALTY") { //why are some games giving me stoppages? game 2022020006 for ex
             savePlay = false;
         } else { //putting the team penalty search in an else case prevents exceptions when the penalty data isnt there
-            if (playData[i]['team']['id'] === favoriteTeam) {
+            if (play['team']['id'] === favoriteTeam) {
                 savePlay = false;
             }
         }
@@ -147,34 +148,31 @@ function getPenaltiesFromAllPlays(allPlays){
                     timeLeftInPeriod: null
                 }
             };
-            tempObj['type']['call'] = playData[i]['result']['secondaryType'];
-            tempObj['type']['description'] = playData[i]['result']['description'];
-            tempObj['type']['minutes'] = playData[i]['result']['penaltyMinutes'];
+            tempObj['type']['call'] = play['result']['secondaryType'];
+            tempObj['type']['description'] = play['result']['description'];
+            tempObj['type']['minutes'] = play['result']['penaltyMinutes'];
 
-            tempObj['time']['period'] = playData[i]['about']['period'];
-            tempObj['time']['timeIntoPeriod'] = playData[i]['about']['periodTime'];
-            tempObj['time']['timeLeftInPeriod'] = playData[i]['about']['periodTimeRemaining'];
+            tempObj['time']['period'] = play['about']['period'];
+            tempObj['time']['timeIntoPeriod'] = play['about']['periodTime'];
+            tempObj['time']['timeLeftInPeriod'] = play['about']['periodTimeRemaining'];
             transformedPlayData.push(tempObj);
         }
-
-
-        //make sure that the penalty is on someone other than the favorite team
-
-        i++;
-    }
+    } 
+    return transformedPlayData;
 }
 
 function getMostRecentPenalty(data, period, timeIntoPeriod) {
+    
     //get the penalty plays from the game data
     let returnPenalty = null;
-    let penaltyData = getPowerPlayInfoFromGameLiveData(data)
-
+    let penaltyData = getPenaltiesFromAllPlays(data)
+    console.log(penaltyData)
     for (penalty of penaltyData) {
         if (penalty['time']['period'] > period) {
             //ignore it, it's after the period that we're looking for
         } else {
             paramTimeConverted = convertClockTimeToJson(timeIntoPeriod);
-            arrayTimeConverted = convertClockTimeToJson(penalty['time']['timeInfoPeriod']);
+            arrayTimeConverted = convertClockTimeToJson(penalty['time']['timeIntoPeriod']);
             if (arrayTimeConverted[0] > paramTimeConverted[0]) {
 
             } else {
@@ -203,45 +201,48 @@ function getPPGInfoFromGameLiveData(data){
 
         if(play['result']['eventTypeId'] == "GOAL" ){
             if (play['result']['strength']['code'] == "PPG"){ //if checks are seperate b/c not every play has a strength code
-                let goalPlayInfo = {
-                    players: {
-                        score: {},
-                        assist: []
-                    },
-                    time:{
-                        timeIntoPeriod: null,
-                        timeLeftInPeriod: null
-                    },
-                    penaltyInfo: null
-                };
+                if(play['team']['id'] == favoriteTeam){
+                    let goalPlayInfo = {
+                        players: {
+                            score: {},
+                            assist: []
+                        },
+                        time: {
+                            timeIntoPeriod: null,
+                            timeLeftInPeriod: null
+                        },
+                        penaltyInfo: null
+                    };
 
-                for(let x = 0; x < play['players'].length; x++){
-                    console.log(play['players'][x])
-                    switch(play['players'][x]['playerType']){
-                        case "Scorer":
-                            goalPlayInfo['players']['score'] = {
-                                playerID : play['players'][x]['player']['id'],
-                                playerName: play['players'][x]['player']['fullName']
-                            }
-                        case "Assist":
-                            goalPlayInfo['players']['assist'].push(
-                                {
+                    for (let x = 0; x < play['players'].length; x++) {
+                        switch (play['players'][x]['playerType']) {
+                            case "Scorer":
+                                goalPlayInfo['players']['score'] = {
                                     playerID: play['players'][x]['player']['id'],
                                     playerName: play['players'][x]['player']['fullName']
                                 }
-                            )
+                            case "Assist":
+                                goalPlayInfo['players']['assist'].push(
+                                    {
+                                        playerID: play['players'][x]['player']['id'],
+                                        playerName: play['players'][x]['player']['fullName']
+                                    }
+                                )
 
+                        }
                     }
-                }
 
-                goalPlayInfo['penaltyInfo'] = getMostRecentPenalty(playData, play['about']['period'], play['about']['periodTime']);
-                transformedPlayData.push(goalPlayInfo);
+                    goalPlayInfo['penaltyInfo'] = getMostRecentPenalty(playData, play['about']['period'], play['about']['periodTime']);
+                    transformedPlayData.push(goalPlayInfo);
+                }
+                
             }
             
         }
         
         i++;
     }
+    return transformedPlayData;
 }
 
 
