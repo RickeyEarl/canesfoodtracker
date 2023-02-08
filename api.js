@@ -43,7 +43,7 @@ app.get("/team/:teamID/schedule", function(req,res){
 
 
 app.get('/team/:teamID/schedule/powerplay', function(req,res){
-    const scheduleURL = process.env.LOCAL_CALL_HOST + ":" + PORT +  "/team/" + req.params['teamID'] + "/schedule";
+    const scheduleURL = process.env.LOCAL_CALL_HOST + "/team/" + req.params['teamID'] + "/schedule";
     const axios = require('axios').default;
     const nhlParse = require("./nhl_parse");
     sendArray = [];
@@ -54,7 +54,7 @@ app.get('/team/:teamID/schedule/powerplay', function(req,res){
         .then(function(schedule){
             let promiseArray = []
             for (game of schedule) {
-                let gameInfoURL = process.env.LOCAL_CALL_HOST + ":" + PORT + "/game/" + game['gameID'];
+                let gameInfoURL = process.env.LOCAL_CALL_HOST + "/game/" + game['gameID'];
                 promiseArray.push(axios.get(gameInfoURL))
                
             }
