@@ -8,8 +8,8 @@ app.get('/', function(req, res){
         description: "Canes Food Tracker, API Endpoint. No Frontend Yet",
         GitHub: "https://github.com/RickeyEarl/canesfoodtracker-api",
         'Suggested-Routes':[
-            process.env.LOCAL_CALL_HOST + "/team/12/schedule",
-            process.env.LOCAL_CALL_HOST + "/team/12/schedule/powerplay"
+            process.env.LOCAL_CALL_HOST + "http://api.canesbiscuittracker.com/team/12/schedule",
+            process.env.LOCAL_CALL_HOST + "http://api.canesbiscuittracker.com/team/12/schedule/powerplay"
         ],
         'Lets-Go-Hurri-canes':"Lets Go Canes"
     }
