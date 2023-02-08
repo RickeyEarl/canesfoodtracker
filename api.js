@@ -1,6 +1,7 @@
 var express = require ('express');
 require('dotenv').config();
 var app = express();
+const PORT = process.env.PORT || 3000;
 
 app.get('/', function(req, res){
     res.send('Hello World');
@@ -42,7 +43,7 @@ app.get("/team/:teamID/schedule", function(req,res){
 
 
 app.get('/team/:teamID/schedule/powerplay', function(req,res){
-    const scheduleURL = "http://localhost:80/team/" + req.params['teamID'] + "/schedule";
+    const scheduleURL = process.env.LOCAL_CALL_HOST + ":" + PORT +  "/team/" + req.params['teamID'] + "/schedule";
     const axios = require('axios').default;
     const nhlParse = require("./nhl_parse");
     sendArray = [];
@@ -53,7 +54,7 @@ app.get('/team/:teamID/schedule/powerplay', function(req,res){
         .then(function(schedule){
             let promiseArray = []
             for (game of schedule) {
-                let gameInfoURL = "http://localhost:80/game/" + game['gameID'];
+                let gameInfoURL = process.env.LOCAL_CALL_HOST + ":" + PORT + "/game/" + game['gameID'];
                 promiseArray.push(axios.get(gameInfoURL))
                
             }
@@ -68,7 +69,7 @@ app.get('/team/:teamID/schedule/powerplay', function(req,res){
 })
 
 
-const PORT = process.env.PORT || 80;
+
 var server = app.listen(PORT, function(){
     var host = server.address().address
     var port = server.address().port
