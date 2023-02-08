@@ -4,7 +4,16 @@ var app = express();
 const PORT = process.env.PORT || 3000;
 
 app.get('/', function(req, res){
-    res.send('Hello World');
+    let sendObj = {
+        description: "Canes Food Tracker, API Endpoint. No Frontend Yet",
+        GitHub: "https://github.com/RickeyEarl/canesfoodtracker-api",
+        'Suggested-Routes':[
+            process.env.LOCAL_CALL_HOST + "/team/12/schedule",
+            process.env.LOCAL_CALL_HOST + "/team/12/schedule/powerplay"
+        ],
+        'Lets-Go-Hurri-canes':"Lets Go Canes"
+    }
+    res.send(sendObj);
 })
 
 app.get("/game/:gameID", function(req, res){
