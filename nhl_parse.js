@@ -166,7 +166,6 @@ function getMostRecentPenalty(data, period, timeIntoPeriod) {
     //get the penalty plays from the game data
     let returnPenalty = null;
     let penaltyData = getPenaltiesFromAllPlays(data)
-    console.log(penaltyData)
     for (penalty of penaltyData) {
         if (penalty['time']['period'] > period) {
             //ignore it, it's after the period that we're looking for
@@ -187,7 +186,57 @@ function getMostRecentPenalty(data, period, timeIntoPeriod) {
 
 function getPPGInfoFromGameLiveData(data){
     const playData = data['liveData']['plays']['allPlays'] //get all play info
+    const gameData = data['gameData'];
 
+    transformedGameData = {
+        homeGame: null,
+        gameTime: {
+            readable: {
+                date: null,
+                time: null
+            },
+            system: null,
+        },
+        opponent:{
+            teamID: null,
+            teamName: null,
+            teamShortName: null
+        }
+
+    }
+
+    if(gameData['teams']['home']['id'] == favoriteTeam){
+        transformedGameData['homeGame'] = true;
+    }else{
+        transformedGameData['homeGame'] = false;
+    }
+
+    const gameTime = new Date(gameData['datetime']['dateTime']);
+
+    transformedGameData['gameTime']['system'] = gameTime;
+
+    if (gameTime.getMinutes() > 0){
+        //doesn't start on the hour, provide the minutes
+        var timeOptions = { hour: 'numeric', minute: '2-digit'} //maybe use narrow in the future?
+    }else{
+        //starts on the hour
+        var timeOptions = { hour: 'numeric'} //maybe use narrow in the future?
+    }
+
+    transformedGameData['gameTime']['readable']['time'] = gameTime.toLocaleTimeString(['en-US'],timeOptions);
+
+    let dateOptions = {month:"short", day:"numeric"};
+
+    transformedGameData['gameTime']['readable']['date'] = gameTime.toLocaleDateString('en-US',dateOptions);
+    let opponentTeamInfo;
+    if(transformedGameData['homeGame'] == true){
+        opponentTeamInfo = gameData['teams']['away'];
+    }else{
+        opponentTeamInfo = gameData['teams']['home'];
+    }
+    transformedGameData['opponent']['teamID'] = opponentTeamInfo['id']
+    transformedGameData['opponent']['teamName'] = opponentTeamInfo['name']
+    transformedGameData['opponent']['teamShortName'] = opponentTeamInfo['triCode']
 
 
     //get penalty play data
@@ -221,6 +270,7 @@ function getPPGInfoFromGameLiveData(data){
                                     playerID: play['players'][x]['player']['id'],
                                     playerName: play['players'][x]['player']['fullName']
                                 }
+                                break;
                             case "Assist":
                                 goalPlayInfo['players']['assist'].push(
                                     {
@@ -242,7 +292,23 @@ function getPPGInfoFromGameLiveData(data){
         
         i++;
     }
-    return transformedPlayData;
+    let returnObject = {
+        biscuits: null,
+        gameInfo: null,
+        playInfo: null
+    }
+
+    if(transformedPlayData.length > 0){
+        returnObject['biscuits'] = true;
+        
+    }else{
+        returnObject['biscuits'] = false;
+    }
+
+    returnObject['gameInfo'] = transformedGameData;
+    returnObject['playInfo'] = transformedPlayData;
+
+    return returnObject;
 }
 
 
